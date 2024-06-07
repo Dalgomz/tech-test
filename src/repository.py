@@ -1,5 +1,8 @@
+from fastapi import HTTPException
 import requests
 import pandas as pd
+
+# This file is inteded for connecting directly to a database, however pandas library will be used as fetching the JSON from the api's to mimic SQL database tables
 
 clients_api = 'https://run.mocky.io/v3/532e77dc-2e2d-4a0c-91fd-5ea92ff5d615'
 policies_api = 'https://run.mocky.io/v3/289c72a0-8190-4a15-9a15-4118dc2fbde6'
@@ -21,21 +24,33 @@ def auth_user(user_id, allowed_roles):
 	return False
 
 def fetch_user_by_id(user_id):
-	df = fetch_clients()
-	response = df[df["id"] == user_id].to_dict(orient="records")[0]
+	clients_df = fetch_clients()
+	response = clients_df[clients_df["id"] == user_id].to_dict(orient="records")
 	if len(response) > 0:
-		return response
-	raise Exception("Id Not Found")
+		return response[0]
+	raise HTTPException(404, "Id Not Found")
 
 def fetch_user_by_name(user_name):
-	df = fetch_clients()
-	response = df[df["name"] == user_name].to_dict(orient="records")[0]
+	clients_df = fetch_clients()
+	response = clients_df[clients_df["name"] == user_name].to_dict(orient="records")
+	if len(response) > 0:
+		return response[0]
+	raise HTTPException(404, "Name Not Found")
+
+def fetch_policies_by_username(username):
+	# Can be achieved in a single query with a join using a real DB 
+	clientId = fetch_user_by_name(username)['id']
+	policies_df = fetch_policies()
+	response = policies_df[policies_df["clientId"] == clientId].to_dict(orient="records")
 	if len(response) > 0:
 		return response
-	raise Exception("Username Not Found")
-
-def fetch_policy_by_user(user_id):
-	return {}
-
-def fetch_policy_owner(user_name):
-	return {}
+	raise HTTPException(404, "Policy Not Found")
+	
+def fetch_policy_owner(policy_number):
+	# Can be achieved in a single query with a join using a real DB 
+	policies_df = fetch_policies()
+	client_id = policies_df[policies_df["id"] == policy_number]['clientId']
+	if len(client_id) == 0:
+		raise HTTPException(404, "Policy Not Found")
+	
+	return fetch_user_by_id(client_id.values[0])
