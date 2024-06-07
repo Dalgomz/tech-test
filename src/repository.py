@@ -29,7 +29,7 @@ def fetch_user_by_id(user_id):
 
 def fetch_user_by_name(user_name):
 	df = fetch_clients()
-	response = df[df["name"] == user_name].to_dict(orient="records")
+	response = df[df["name"] == user_name].to_dict(orient="records")[0]
 	if len(response) > 0:
 		return response
 	raise Exception("Username Not Found")
