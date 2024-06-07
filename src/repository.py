@@ -13,18 +13,29 @@ def fetch_policies():
 	return pd.read_json(resp.text)
 
 def auth_user(user_id, allowed_roles):
-	return True
+	df = fetch_clients()
+	user_roles = df[df["id"] == user_id]['role']
+	if len(user_roles) > 0:
+		return user_roles.values[0] in allowed_roles
+	
+	return False
 
 def fetch_user_by_id(user_id):
-	return {}
+	df = fetch_clients()
+	response = df[df["id"] == user_id].to_dict(orient="records")[0]
+	if len(response) > 0:
+		return response
+	raise Exception("Id Not Found")
 
 def fetch_user_by_name(user_name):
-	return {}
-
+	df = fetch_clients()
+	response = df[df["name"] == user_name].to_dict(orient="records")
+	if len(response) > 0:
+		return response
+	raise Exception("Username Not Found")
 
 def fetch_policy_by_user(user_id):
 	return {}
-
 
 def fetch_policy_owner(user_name):
 	return {}

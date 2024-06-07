@@ -6,18 +6,25 @@ import service
 
 router = APIRouter()
 
-@router.get("/users/{id}")
-def user_id(id: str):
-    return service.get_user_by_id(id)
+def get_user_by_id(id: str, uid: Union[str, None] = None):
+    if repository.auth_user(uid, ['user', 'admin']):
+        return service.get_user_by_id(id)
+    raise HTTPException(403, detail="Unauthorized user")
 
 @router.get("/users/name/{name}")
-def user_id(name: str):
-    return service.get_user_by_name(name)
+def get_user_by_name(name: str, uid: Union[str, None] = None):
+    if repository.auth_user(uid, ['user', 'admin']):
+        return service.get_user_by_name(name)
+    raise HTTPException(403, detail="Unauthorized user")
 
-@router.get("/policies/{user_name}")
-def user_id(user_name:str):
-    return service.get_policy_by_user(user_name)
+@router.get("/policies/{username}")
+def get_policy_by_username(username: str, uid: Union[str, None] = None):
+    if repository.auth_user(uid, ['admin']):
+        return service.get_policy_by_user(username)
+    raise HTTPException(403, detail="Unauthorized user")
 
 @router.get("/policies/{number}/user/")
-def user_id(number: str):
-    return service.get_policy_owner(number)
+def get_policy_owner(number: str, uid: Union[str, None] = None):
+    if repository.auth_user(uid, ['admin']):
+        return service.get_policy_owner(number)
+    raise HTTPException(403, detail="Unauthorized user")
